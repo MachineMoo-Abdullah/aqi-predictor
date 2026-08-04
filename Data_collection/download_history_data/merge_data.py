@@ -3,28 +3,29 @@ from pathlib import Path
 
 RAW_DIR = Path("/Users/altair/Applications/aqi-predictor/Data_collection/data/raw")
 
-weather = pd.read_csv(RAW_DIR / "weather_history.csv")
-air = pd.read_csv(RAW_DIR / "air_quality_history.csv")
+# Read hourly datasets
+weather = pd.read_csv(RAW_DIR / "weather_hourly.csv")
+air = pd.read_csv(RAW_DIR / "air_quality_hourly.csv")
 
-# Rename if necessary
-weather.rename(columns={"time": "date"}, inplace=True)
+# Convert datetime columns
+weather["datetime"] = pd.to_datetime(weather["datetime"])
+air["datetime"] = pd.to_datetime(air["datetime"])
 
-# Convert to datetime
-weather["date"] = pd.to_datetime(weather["date"])
-air["date"] = pd.to_datetime(air["date"])
-
-# Merge
+# Merge on datetime
 merged = pd.merge(
     weather,
     air,
-    on="date",
+    on="datetime",
     how="inner"
 )
 
+# Save merged dataset
 merged.to_csv(
-    RAW_DIR / "historical_dataset.csv",
+    RAW_DIR / "historical_dataset_hourly.csv",
     index=False
 )
 
 print(merged.head())
 print(f"\nRows: {len(merged)}")
+print("\nColumns:")
+print(merged.columns)

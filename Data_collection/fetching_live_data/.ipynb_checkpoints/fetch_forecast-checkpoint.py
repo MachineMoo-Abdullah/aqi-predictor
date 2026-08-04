@@ -1,7 +1,7 @@
 import requests
 import pandas as pd
 
-from config import *
+from Data_collection.fetching_live_data.config import *
 
 def fetch_forecast():
 

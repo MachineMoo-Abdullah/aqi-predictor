@@ -5,7 +5,7 @@ import sys
 
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
-from config import *
+from fetching_live_data.config import *
 
 START_DATE = "2024-01-01"
 END_DATE = "2026-07-30"
@@ -17,29 +17,40 @@ params = {
     "longitude": LONGITUDE,
     "start_date": START_DATE,
     "end_date": END_DATE,
-    "daily": [
-        "temperature_2m_max",
-        "temperature_2m_min",
-        "temperature_2m_mean",
-        "precipitation_sum",
-        "wind_speed_10m_max"
+    "hourly": [
+        "temperature_2m",
+        "relative_humidity_2m",
+        "surface_pressure",
+        "precipitation",
+        "wind_speed_10m"
     ],
     "timezone": "auto"
 }
 
 response = requests.get(url, params=params)
+
 if response.status_code != 200:
     print(response.text)
     exit()
 
 data = response.json()
 
-df = pd.DataFrame(data["daily"])
+# Hourly data
+df = pd.DataFrame(data["hourly"])
+
+# Convert timestamp
+df["datetime"] = pd.to_datetime(df["time"])
+
+# Drop original time column
+df.drop(columns=["time"], inplace=True)
 
 RAW_DIR = Path("/Users/altair/Applications/aqi-predictor/Data_collection/data/raw")
 RAW_DIR.mkdir(parents=True, exist_ok=True)
 
-df.to_csv(RAW_DIR / "weather_history.csv", index=False)
+df.to_csv(
+    RAW_DIR / "weather_hourly.csv",
+    index=False
+)
 
 print(df.head())
-print(f"\nSaved {len(df)} days of weather data.")
+print(f"\nSaved {len(df)} hourly weather records.")

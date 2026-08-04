@@ -6,12 +6,13 @@ import sys
 # Add parent directory to Python path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
-from config import *
+from fetching_live_data.config import *
 
 START_DATE = "2024-01-01"
 END_DATE = "2026-07-30"
 
 url = "https://air-quality-api.open-meteo.com/v1/air-quality"
+
 params = {
     "latitude": LATITUDE,
     "longitude": LONGITUDE,
@@ -24,7 +25,7 @@ params = {
         "nitrogen_dioxide",
         "sulphur_dioxide",
         "ozone",
-        "us_aqi"           
+        "us_aqi"
     ],
     "timezone": "auto"
 }
@@ -34,29 +35,39 @@ response.raise_for_status()
 
 data = response.json()
 
+# Keep hourly data
 df = pd.DataFrame(data["hourly"])
 
-df["time"] = pd.to_datetime(df["time"])
+# Convert timestamp
+df["datetime"] = pd.to_datetime(df["time"])
 
-daily_df = (
-    df.groupby(df["time"].dt.date)
-      .mean(numeric_only=True)
-      .reset_index()
-)
+# Drop original time column
+df.drop(columns=["time"], inplace=True)
 
-daily_df.rename(
-    columns={"time": "date"},
-    inplace=True,
-    errors="ignore"
-)
+# Rename AQI column
+df.rename(columns={"us_aqi": "AQI"}, inplace=True)
+
+# Reorder columns
+df = df[
+    [
+        "datetime",
+        "pm2_5",
+        "pm10",
+        "carbon_monoxide",
+        "nitrogen_dioxide",
+        "sulphur_dioxide",
+        "ozone",
+        "AQI"
+    ]
+]
 
 RAW_DIR = Path("/Users/altair/Applications/aqi-predictor/Data_collection/data/raw")
 RAW_DIR.mkdir(parents=True, exist_ok=True)
 
-daily_df.to_csv(
-    RAW_DIR / "air_quality_history.csv",
+df.to_csv(
+    RAW_DIR / "air_quality_hourly.csv",
     index=False
 )
 
-print(daily_df.head())
-print(f"\nSaved {len(daily_df)} days of air quality data.")
+print(df.head())
+print(f"\nSaved {len(df)} hourly records.")

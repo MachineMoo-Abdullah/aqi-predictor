@@ -1,21 +1,31 @@
-from config import *
 import requests
-from datetime import datetime
 
-def fetch_weather():
+from Data_collection.fetching_live_data.config import *
+
+
+def fetch_hourly_weather():
     """
-    Fetch current weather from OpenWeather.
+    Fetch current hour weather from Open-Meteo Forecast API.
+    Returns features matching the historical dataset.
     """
+
+    url = "https://api.open-meteo.com/v1/forecast"
 
     params = {
-        "lat": LATITUDE,
-        "lon": LONGITUDE,
-        "appid": API_KEY,
-        "units": "metric"
+        "latitude": LATITUDE,
+        "longitude": LONGITUDE,
+        "current": [
+            "temperature_2m",
+            "relative_humidity_2m",
+            "surface_pressure",
+            "precipitation",
+            "wind_speed_10m"
+        ],
+        "timezone": "auto"
     }
 
     response = requests.get(
-        WEATHER_URL,
+        url,
         params=params,
         timeout=20
     )
@@ -24,56 +34,22 @@ def fetch_weather():
 
     data = response.json()
 
+    current = data["current"]
+
     weather = {
-        "timestamp": datetime.utcfromtimestamp(data["dt"]),
 
-        "city": data["name"],
+        "datetime": current["time"],
 
-        "country": data["sys"]["country"],
+        "temperature_2m": current["temperature_2m"],
 
-        "latitude": LATITUDE,
+        "relative_humidity_2m": current["relative_humidity_2m"],
 
-        "longitude": LONGITUDE,
+        "surface_pressure": current["surface_pressure"],
 
-        "temperature": data["main"]["temp"],
+        "precipitation": current["precipitation"],
 
-        "feels_like": data["main"]["feels_like"],
+        "wind_speed_10m": current["wind_speed_10m"]
 
-        "temp_min": data["main"]["temp_min"],
-
-        "temp_max": data["main"]["temp_max"],
-
-        "humidity": data["main"]["humidity"],
-
-        "pressure": data["main"]["pressure"],
-
-        "sea_level": data["main"].get("sea_level"),
-
-        "ground_level": data["main"].get("grnd_level"),
-
-        "visibility": data.get("visibility"),
-
-        "wind_speed": data["wind"]["speed"],
-
-        "wind_direction": data["wind"]["deg"],
-
-        "wind_gust": data["wind"].get("gust"),
-
-        "cloudiness": data["clouds"]["all"],
-
-        "sunrise": datetime.utcfromtimestamp(
-            data["sys"]["sunrise"]
-        ),
-
-        "sunset": datetime.utcfromtimestamp(
-            data["sys"]["sunset"]
-        ),
-
-        "weather_main": data["weather"][0]["main"],
-
-        "weather_description": data["weather"][0]["description"]
     }
 
     return weather, data
-
-
