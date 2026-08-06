@@ -1,6 +1,7 @@
 import pandas as pd
 from pathlib import Path
 import sys
+from sqlalchemy import text
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
@@ -19,17 +20,13 @@ def read_features():
     ORDER BY datetime;
     """
 
-    df = pd.read_sql(query, engine)
+    with engine.connect() as conn:
+        df = pd.read_sql(
+            text(query),
+            conn
+        )
 
     # Convert datetime column
     df["datetime"] = pd.to_datetime(df["datetime"])
 
     return df
-
-
-if __name__ == "__main__":
-
-    df = read_features()
-
-    print(df.head())
-    print(df.shape)

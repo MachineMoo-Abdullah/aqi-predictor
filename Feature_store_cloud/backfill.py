@@ -19,8 +19,8 @@ def upload_features(df: pd.DataFrame):
     """
 
     df["datetime"] = pd.to_datetime(df["datetime"])
-
-    timestamp = df.loc[0, "datetime"]
+    timestamp = pd.to_datetime(df.loc[0, "datetime"]).floor("h")
+    df.loc[0, "datetime"] = timestamp
 
     with engine.begin() as conn:
 
@@ -88,15 +88,20 @@ def upload_features(df: pd.DataFrame):
                     / previous_aqi
                 )
 
-        # Append new row
-        df.to_sql(
-            name="aqi_features",
-            con=conn,
-            if_exists="append",
-            index=False
-        )
-
-        print(f"Uploaded features for {timestamp}.")
+        try:
+            df.to_sql(
+                name="aqi_features",
+                con=conn,
+                if_exists="append",
+                index=False
+            )
+        
+            print(f"Uploaded features for {timestamp}.")
+        
+        except Exception as e:
+        
+            print(f"Features for {timestamp} already exist.")
+            print(e)
 
 
 def upload_historical_features():
@@ -121,4 +126,3 @@ def upload_historical_features():
 
     print(f"Uploaded {len(df)} historical feature rows.")
 
-upload_historical_features()

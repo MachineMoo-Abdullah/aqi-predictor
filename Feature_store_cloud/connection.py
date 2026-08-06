@@ -17,5 +17,4 @@ DATABASE_URL = (
     f"postgresql://{USER}:{PASSWORD}"
     f"@{HOST}:{PORT}/{DB}"
 )
-
 engine = create_engine(DATABASE_URL)

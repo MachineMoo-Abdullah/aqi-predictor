@@ -20,7 +20,3 @@ air = fetch_air_quality()
 features = engineer_features(weather, air)
 
 upload_features(features)
-
-print(features)
-
-print("Hourly features uploaded successfully.")
