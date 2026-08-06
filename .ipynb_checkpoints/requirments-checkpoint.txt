@@ -4,5 +4,3 @@ pandas>=2.0.0
 seaborn
 feast
 psycopg2-binary
-scikit-learn
-tensorflow
