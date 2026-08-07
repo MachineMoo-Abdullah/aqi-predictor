@@ -18,7 +18,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-           pip install -r requirments.txt
+           pip install -r requirements.txt
 
       - name: Run pipeline
         env:
@@ -28,4 +28,4 @@ jobs:
           LONGITUDE: ${{ secrets.LONGITUDE }}
 
         run: |
-          python Upload_hourly/daily-pipeline.py
+          python src/pipelines/daily_pipeline.py

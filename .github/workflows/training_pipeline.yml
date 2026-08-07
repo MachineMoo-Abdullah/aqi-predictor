@@ -1,0 +1,62 @@
+name: Weekly Incremental Training
+
+on:
+  schedule:
+    # Runs every Monday at 00:00 UTC. Adjust day/time as needed:
+    # cron syntax: minute hour day-of-month month day-of-week
+    - cron: "0 0 * * 1"
+  workflow_dispatch: {}   # lets you trigger it manually from the Actions tab
+
+concurrency:
+  group: incremental-training
+  cancel-in-progress: false   # don't kill a training run if triggered twice
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-train.txt
+          pip install -e .
+
+      - name: Write environment secrets
+        # Add any keys incremental_training.py / feature_store need at runtime.
+        # Configure these under Repo Settings -> Secrets and variables -> Actions.
+        run: |
+          echo "HOPSWORKS_API_KEY=${{ secrets.HOPSWORKS_API_KEY }}" >> .env
+          echo "WEATHER_API_KEY=${{ secrets.WEATHER_API_KEY }}" >> .env
+          echo "AIR_QUALITY_API_KEY=${{ secrets.AIR_QUALITY_API_KEY }}" >> .env
+
+      - name: Run incremental training
+        run: python -m model.incremental_training
+
+      - name: Upload trained model as workflow artifact
+        # models/ is gitignored (correctly -- large binary files don't belong
+        # in git history), so we attach it as a run artifact instead.
+        uses: actions/upload-artifact@v4
+        with:
+          name: model-artifacts-${{ github.run_id }}
+          path: models/
+          retention-days: 30
+
+      - name: Upload training metrics
+        if: always()   # capture metrics even if a later step fails
+        uses: actions/upload-artifact@v4
+        with:
+          name: training-metrics-${{ github.run_id }}
+          path: models/history/metrics.csv
+          if-no-files-found: warn

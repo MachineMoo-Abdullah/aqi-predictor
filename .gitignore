@@ -4,6 +4,9 @@
 # Python
 __pycache__/
 *.pyc
+*.egg-info/
+build/
+dist/
 
 # Jupyter
 .ipynb_checkpoints/
@@ -16,8 +19,13 @@ __pycache__/
 venv/
 env/
 
-# Trained models
-Model/models/
-*.pkl
-*.keras
-*.h5
+# IDE
+.vscode/
+.idea/
+
+# Trained models (whole folder — pkl/keras/h5 globs below are then redundant)
+models/
+
+# Data
+data/raw/*.csv
+data/processed/*.csv
