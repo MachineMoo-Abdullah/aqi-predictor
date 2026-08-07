@@ -39,3 +39,59 @@ def engineer_features(weather, air):
     df["month_cos"] = np.cos(2 * np.pi * df["month"] / 12)
 
     return df
+
+import pandas as pd
+import numpy as np
+
+
+def engineer_historical_features(df):
+    """
+    Apply the same feature engineering used for live data
+    to the entire historical dataset.
+    """
+
+    # Ensure datetime is datetime type
+    df["datetime"] = pd.to_datetime(df["datetime"])
+
+    # --------------------
+    # Time Features
+    # --------------------
+    df["hour"] = df["datetime"].dt.hour
+    df["day"] = df["datetime"].dt.day
+    df["dayofweek"] = df["datetime"].dt.dayofweek
+    df["month"] = df["datetime"].dt.month
+
+    # --------------------
+    # Cyclic Encoding
+    # --------------------
+    df["hour_sin"] = np.sin(2 * np.pi * df["hour"] / 24)
+    df["hour_cos"] = np.cos(2 * np.pi * df["hour"] / 24)
+
+    df["month_sin"] = np.sin(2 * np.pi * df["month"] / 12)
+    df["month_cos"] = np.cos(2 * np.pi * df["month"] / 12)
+
+    # --------------------
+    # AQI Change Rate
+    # --------------------
+    df["AQI_change_rate"] = (
+        df["AQI"]
+        .pct_change()
+        .replace([np.inf, -np.inf], 0)
+        .fillna(0)
+    )
+
+    return df
+
+df = pd.read_csv(
+    "Applications/aqi-predictor/Data_collection/data/raw/historical_dataset_hourly.csv"
+)
+
+df = engineer_historical_features(df)
+
+df.to_csv(
+    "Applications/aqi-predictor/Data_collection/data/raw/historical_dataset_hourly.csv",
+    index=False
+)
+
+print(df.head())
+print(df.columns)

@@ -126,3 +126,4 @@ def upload_historical_features():
 
     print(f"Uploaded {len(df)} historical feature rows.")
 
+upload_historical_features()

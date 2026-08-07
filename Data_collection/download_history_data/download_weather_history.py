@@ -8,7 +8,7 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 from fetching_live_data.config import *
 
 START_DATE = "2024-01-01"
-END_DATE = "2026-08-06"
+END_DATE = "2026-08-07"
 
 url = "https://archive-api.open-meteo.com/v1/archive"
 
