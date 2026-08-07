@@ -1,8 +1,8 @@
-from prepare_data import prepare_dataset
-from data_processor import create_sequences, scale_train_test
-from model_builder import build_model
-from trainer import train
-from saver import save_training_model
+from .prepare_data import prepare_dataset
+from .data_processor import create_sequences, scale_train_test
+from .model_builder import build_model
+from .trainer import train
+from .saver import save_training_model
 
 from sklearn.model_selection import train_test_split
 

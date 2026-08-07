@@ -1,8 +1,9 @@
-from prepare_data import prepare_dataset
-from data_processor import create_sequences, scale_full_data
-from model_builder import build_model
-from trainer import train
-from saver import save_candidate
+
+from .prepare_data import prepare_dataset
+from .data_processor import create_sequences, scale_full_data
+from .model_builder import build_model
+from .trainer import train
+from .saver import save_candidate
 
 
 def incremental_train():
