@@ -19,4 +19,4 @@ def incremental_pipeline():
 
 if __name__ == "__main__":
 
-    initial_pipeline()
+    incremental_pipeline()

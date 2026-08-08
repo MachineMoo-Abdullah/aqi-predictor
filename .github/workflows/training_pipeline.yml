@@ -48,7 +48,7 @@ jobs:
           echo "AIR_QUALITY_API_KEY=${{ secrets.AIR_QUALITY_API_KEY }}" >> .env
 
       - name: Run incremental training
-        run: python -m src.model.incremental_training
+        run: python -m src.model.pipeline
 
       - name: Upload trained model as workflow artifact
         # models/ is gitignored (correctly -- large binary files don't belong
