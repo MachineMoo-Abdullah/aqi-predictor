@@ -133,4 +133,28 @@ def evaluate_model():
     return accepted
 
 
+print("\n================================================")
+print("DEBUG PATH CHECK")
+print("================================================")
 
+print("BASE_DIR:")
+print(BASE_DIR)
+
+print("\nMODELS DIRECTORY:")
+print(BASE_DIR / "models")
+
+print("\nX_TEST:")
+print(X_TEST)
+
+print("\nY_TEST:")
+print(Y_TEST)
+
+print("\nBASE_DIR exists:", BASE_DIR.exists())
+print("models exists:", (BASE_DIR / "models").exists())
+print("X_test exists:", X_TEST.exists())
+print("y_test exists:", Y_TEST.exists())
+
+if (BASE_DIR / "models").exists():
+    print("\nFiles inside models:")
+    for file in (BASE_DIR / "models").iterdir():
+        print(" -", file)
