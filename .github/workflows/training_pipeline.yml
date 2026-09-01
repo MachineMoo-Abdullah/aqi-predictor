@@ -2,27 +2,23 @@ name: Weekly Incremental Training
 
 on:
   schedule:
+    # Runs every Monday at 00:00 UTC. Adjust day/time as needed:
+    # cron syntax: minute hour day-of-month month day-of-week
     - cron: "0 0 * * 1"
-
-  workflow_dispatch: {}
+  workflow_dispatch: {}   # lets you trigger it manually from the Actions tab
 
 concurrency:
   group: incremental-training
-  cancel-in-progress: false
+  cancel-in-progress: false   # don't kill a training run if triggered twice
 
 jobs:
-
   train:
-
     runs-on: ubuntu-latest
-
     timeout-minutes: 60
 
     steps:
-
       - name: Checkout repository
         uses: actions/checkout@v4
-
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -30,298 +26,43 @@ jobs:
           python-version: "3.12"
           cache: "pip"
 
-      - name: Upgrade pip
-        run: |
-          python -m pip install --upgrade pip
-
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt
-          pip install -r requirements-train.txt
-
-
-      - name: Install project
-        run: |
-          pip install -e .
-
-
-      - name: Debug repository
-        run: |
-          echo "CURRENT DIRECTORY"
-
-          pwd
-
-          echo ""
-          echo "PYPROJECT FILE"
-
-
-          find . -name "pyproject.toml" -print
-
-          echo ""
-          echo "PROJECT STRUCTURE"
-
-          find . -maxdepth 4 -type f | sort
-
-      - name: Write environment secrets
-        run: |
-
-          echo "HOPSWORKS_API_KEY=${{ secrets.HOPSWORKS_API_KEY }}" >> .env
-
-          echo "WEATHER_API_KEY=${{ secrets.WEATHER_API_KEY }}" >> .env
-
-          echo "AIR_QUALITY_API_KEY=${{ secrets.AIR_QUALITY_API_KEY }}" >> .env
-
-
-
-      - name: Run incremental training
-        run: |
-          python -m src.model.pipeline
-
-      - name: Check training output
-        if: always()
-        run: |
-
-          echo "======================================"
-          echo "KERAS MODELS"
-          echo "======================================"
-
-          find . -type f -name "*.keras" -print
-
-
-          echo ""
-          echo "======================================"
-          echo "SCALERS"
-          echo "======================================"
-
-          find . -type f -name "*.pkl" -print
-
-
-          echo ""
-          echo "======================================"
-          echo "METRICS FILES"
-          echo "======================================"
-
-          find . -type f -name "metrics.csv" -print
-
-
-          echo ""
-          echo "======================================"
-          echo "MODELS DIRECTORY"
-          echo "======================================"
-
-          ls -lah models/ 2>/dev/null || true
-
-
-          echo ""
-          echo "======================================"
-          echo "HISTORY DIRECTORY"
-          echo "======================================"
-
-          ls -lah models/history/ 2>/dev/null || true
-
-
-          echo ""
-          echo "======================================"
-          echo "METRICS CONTENT"
-          echo "======================================"
-
-          cat models/history/metrics.csv 2>/dev/null || true
-
-      - name: Upload trained models
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-
-          name: model-artifacts-${{ github.run_id }}
-
-          path: |
-            models/
-
-          retention-days: 30
-
-          if-no-files-found: warn
-
-
-      - name: Upload training metrics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-
-          name: training-metrics-${{ github.run_id }}
-
-          path: |
-            models/history/metrics.csv
-
-          retention-days: 30
-
-          if-no-files-found: warnname: Weekly Incremental Training
-
-on:
-  schedule:
-
-    - cron: "0 0 * * 1"
-
-  workflow_dispatch: {}
-
-concurrency:
-  group: incremental-training
-  cancel-in-progress: false
-
-jobs:
-
-  train:
-
-    runs-on: ubuntu-latest
-
-    timeout-minutes: 60
-
-    steps:
-
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-          cache: "pip"
-
-
-
-      - name: Upgrade pip
-        run: |
           python -m pip install --upgrade pip
-
-
-
-      - name: Install dependencies
-        run: |
           pip install -r requirements.txt
           pip install -r requirements-train.txt
-
-
-      - name: Install project
-        run: |
-          pip install -e .
-
-
-
       - name: Debug repository
         run: |
-
-          echo "======================================"
-          echo "CURRENT DIRECTORY"
-          echo "======================================"
-
           pwd
-
-          echo ""
-          echo "======================================"
-          echo "PYPROJECT FILE"
-          echo "======================================"
-
-          find . -name "pyproject.toml" -print
-
-          echo ""
-          echo "======================================"
-          echo "PROJECT STRUCTURE"
-          echo "======================================"
-
-          find . -maxdepth 4 -type f | sort
+          ls -la
+          echo "Searching for pyproject.toml..."
+          find . -name "pyproject.toml"
+          pip install -e .
 
       - name: Write environment secrets
+        # Add any keys incremental_training.py / feature_store need at runtime.
+        # Configure these under Repo Settings -> Secrets and variables -> Actions.
         run: |
-
           echo "HOPSWORKS_API_KEY=${{ secrets.HOPSWORKS_API_KEY }}" >> .env
-
           echo "WEATHER_API_KEY=${{ secrets.WEATHER_API_KEY }}" >> .env
-
           echo "AIR_QUALITY_API_KEY=${{ secrets.AIR_QUALITY_API_KEY }}" >> .env
 
-
       - name: Run incremental training
-        run: |
-          python -m src.model.pipeline
+        run: python -m src.model.pipeline
 
-
-      - name: Check training output
-        if: always()
-        run: |
-
-          echo "======================================"
-          echo "KERAS MODELS"
-          echo "======================================"
-
-          find . -type f -name "*.keras" -print
-
-
-          echo ""
-          echo "======================================"
-          echo "SCALERS"
-          echo "======================================"
-
-          find . -type f -name "*.pkl" -print
-
-
-          echo ""
-          echo "======================================"
-          echo "METRICS FILES"
-          echo "======================================"
-
-          find . -type f -name "metrics.csv" -print
-
-
-          echo ""
-          echo "======================================"
-          echo "MODELS DIRECTORY"
-          echo "======================================"
-
-          ls -lah models/ 2>/dev/null || true
-
-
-          echo ""
-          echo "======================================"
-          echo "HISTORY DIRECTORY"
-          echo "======================================"
-
-          ls -lah models/history/ 2>/dev/null || true
-
-
-          echo ""
-          echo "======================================"
-          echo "METRICS CONTENT"
-          echo "======================================"
-
-          cat models/history/metrics.csv 2>/dev/null || true
-
-
-      - name: Upload trained models
-        if: always()
+      - name: Upload trained model as workflow artifact
+        # models/ is gitignored (correctly -- large binary files don't belong
+        # in git history), so we attach it as a run artifact instead.
         uses: actions/upload-artifact@v4
         with:
-
           name: model-artifacts-${{ github.run_id }}
-
-          path: |
-            models/
-
+          path: models/
           retention-days: 30
-
-          if-no-files-found: warn
-
 
       - name: Upload training metrics
-        if: always()
+        if: always()   # capture metrics even if a later step fails
         uses: actions/upload-artifact@v4
         with:
-
           name: training-metrics-${{ github.run_id }}
-
-          path: |
-            models/history/metrics.csv
-
-          retention-days: 30
-
+          path: models/history/metrics.csv
           if-no-files-found: warn
