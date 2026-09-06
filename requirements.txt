@@ -9,3 +9,8 @@ dotenv
 psycopg2-binary>=2.9.9
 requests>=2.31.0
 SQLAlchemy>=2.0.0
+tensorflow==2.16.2
+scikit-learn
+pandas
+numpy
+torch
