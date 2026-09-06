@@ -1,4 +1,3 @@
-
 import joblib
 import numpy as np
 import pandas as pd
@@ -62,7 +61,87 @@ FLAT_FEATURE_NAMES = None
 
 @st.cache_resource
 def load_production_model_and_explainer():
+
     import os
+    import requests
+
+    # ========================================================
+    # HUGGING FACE MODEL URL
+    # ========================================================
+
+    HUGGINGFACE_MODEL_URL = (
+        "https://huggingface.co/abdullahadnan123/Random_Forest/"
+        "resolve/main/rf_production.pkl"
+    )
+
+    # ========================================================
+    # IF MODEL DOES NOT EXIST LOCALLY
+    # DOWNLOAD IT FROM HUGGING FACE
+    # ========================================================
+
+    if not os.path.exists(PRODUCTION_MODEL_PATH):
+
+        st.info(
+            "Production model not found locally. "
+            "Downloading latest model from Hugging Face..."
+        )
+
+        os.makedirs(
+            os.path.dirname(PRODUCTION_MODEL_PATH),
+            exist_ok=True
+        )
+
+        response = requests.get(
+            HUGGINGFACE_MODEL_URL,
+            stream=True,
+            timeout=600
+        )
+
+        response.raise_for_status()
+
+        total_size = int(
+            response.headers.get(
+                "content-length",
+                0
+            )
+        )
+
+        downloaded = 0
+
+        with open(
+            PRODUCTION_MODEL_PATH,
+            "wb"
+        ) as f:
+
+            for chunk in response.iter_content(
+                chunk_size=1024 * 1024
+            ):
+
+                if chunk:
+
+                    f.write(chunk)
+
+                    downloaded += len(chunk)
+
+                    if total_size:
+
+                        percent = (
+                            downloaded /
+                            total_size
+                        ) * 100
+
+                        print(
+                            f"\rDownloaded: "
+                            f"{percent:.1f}%",
+                            end=""
+                        )
+
+        print("\nModel downloaded successfully.")
+
+    # ========================================================
+    # LOAD MODEL
+    # ========================================================
+
     if not os.path.exists(PRODUCTION_MODEL_PATH):
         return None, None
 

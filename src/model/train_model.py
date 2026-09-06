@@ -1,7 +1,7 @@
-
 import joblib
 
 import os
+
 os.makedirs("src/saved_models", exist_ok=True)
 
 import numpy as np
@@ -189,22 +189,32 @@ import copy
 import csv
 from datetime import datetime
 
-import os
 import requests
 import joblib
 
+from huggingface_hub import HfApi
+
+
 PRODUCTION_MODEL_PATH = "src/saved_models/rf_production.pkl"
+
 HISTORY_CSV_PATH = "src/saved_models/training_history.csv"
+
+
 
 HUGGINGFACE_MODEL_URL = (
     "https://huggingface.co/abdullahadnan123/Random_Forest/"
     "resolve/main/rf_production.pkl"
 )
 
+HUGGINGFACE_REPO_ID = "abdullahadnan123/Random_Forest"
+
+HUGGINGFACE_MODEL_FILENAME = "rf_production.pkl"
+
 os.makedirs(
     "src/saved_models",
     exist_ok=True
 )
+
 
 def ensure_production_model():
 
@@ -296,6 +306,77 @@ def ensure_production_model():
         PRODUCTION_MODEL_PATH
     )
 
+def upload_production_model_to_huggingface():
+
+    hf_token = os.getenv("HF_TOKEN")
+
+
+    if not hf_token:
+
+        print("\n" + "=" * 60)
+        print("WARNING: HF_TOKEN NOT FOUND")
+        print("=" * 60)
+
+        print(
+            "Production model was saved locally, "
+            "but was NOT uploaded to Hugging Face."
+        )
+
+        return False
+
+
+    if not os.path.exists(
+        PRODUCTION_MODEL_PATH
+    ):
+
+        print(
+            "\nERROR: Production model does not exist:"
+        )
+
+        print(
+            PRODUCTION_MODEL_PATH
+        )
+
+        return False
+
+
+    print("\n" + "=" * 60)
+    print("UPLOADING UPDATED PRODUCTION MODEL")
+    print("=" * 60)
+
+
+    print(
+        f"Model: {PRODUCTION_MODEL_PATH}"
+    )
+
+    print(
+        f"Repository: {HUGGINGFACE_REPO_ID}"
+    )
+
+
+    api = HfApi(
+        token=hf_token
+    )
+
+
+    api.upload_file(
+        path_or_fileobj=PRODUCTION_MODEL_PATH,
+        path_in_repo=HUGGINGFACE_MODEL_FILENAME,
+        repo_id=HUGGINGFACE_REPO_ID,
+        repo_type="model",
+        commit_message="Update production Random Forest model"
+    )
+
+
+    print(
+        "\nUpdated production model uploaded "
+        "to Hugging Face successfully."
+    )
+
+
+    return True
+
+
 _METRIC_KEYS = []
 
 for _day in range(1, 4):
@@ -327,6 +408,7 @@ HISTORY_FIELDNAMES = (
         for k in _METRIC_KEYS
     ]
 )
+
 
 def evaluate_on_validation(
     model,
@@ -548,6 +630,16 @@ def compare_and_promote(
         )
 
 
+        print(
+            f"Saved new production model "
+            f"-> {production_model_path}"
+        )
+
+
+        # Upload newly created production model
+        upload_production_model_to_huggingface()
+
+
     else:
 
         cand_score = candidate_metrics[
@@ -565,10 +657,11 @@ def compare_and_promote(
             else cand_score > prod_score
         )
 
-
+\
         if candidate_wins:
 
             decision = "promoted_candidate"
+
             winner = "candidate"
 
 
@@ -584,9 +677,14 @@ def compare_and_promote(
             )
 
 
+            # Upload updated production model
+            upload_production_model_to_huggingface()
+
+
         else:
 
             decision = "kept_production"
+
             winner = "production"
 
 
@@ -595,7 +693,6 @@ def compare_and_promote(
                 "still the best -> "
                 f"{production_model_path}"
             )
-
 
     row = {
 
@@ -661,6 +758,7 @@ def compare_and_promote(
         production_metrics
     )
 
+
 def retrain_weekly():
 
     print("\n" + "=" * 60)
@@ -671,13 +769,16 @@ def retrain_weekly():
 
     print("=" * 60)
 
+
     ensure_production_model()
+
 
     df = read_features()
 
     df = add_daily_avg_aqi(
         df
     )
+
 
     X, y = create_3day_sequences(
 
@@ -693,6 +794,7 @@ def retrain_weekly():
             SEQUENCE_LENGTH
 
     )
+
 
     n_samples = len(X)
 
@@ -719,6 +821,7 @@ def retrain_weekly():
         train_end:
     ]
 
+
     X_train_ml = X_train.reshape(
         X_train.shape[0],
         -1
@@ -740,6 +843,7 @@ def retrain_weekly():
         PRODUCTION_MODEL_PATH
 
     )
+
 
     winner, cand_metrics, prod_metrics = (
         compare_and_promote(
