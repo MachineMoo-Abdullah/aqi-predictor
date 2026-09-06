@@ -1,8 +1,9 @@
 streamlit
-pandas==2.2.3
 numpy==1.26.4
+pandas==2.2.3
 scikit-learn
 joblib
 shap
 altair
-requests>=2.31.0s
+requests>=2.31.0
+SQLAlchemy>=2.0.0
