@@ -28,4 +28,5 @@ models/
 
 # Data
 data/raw/*.csv
+src/saved_models/rf_production.pkl
 data/processed/*.csv
