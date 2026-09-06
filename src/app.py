@@ -149,7 +149,7 @@ import os
 from datetime import datetime
 
 model, explainer = load_production_model_and_explainer()
-]
+
 day_mae = {1: None, 2: None, 3: None}
 if os.path.exists(HISTORY_CSV_PATH):
     _hist = pd.read_csv(HISTORY_CSV_PATH)
