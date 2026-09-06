@@ -1,7 +1,8 @@
-requests>=2.31.0
-numpy==1.26.4
+streamlit
 pandas==2.2.3
-SQLAlchemy>=2.0.0
-psycopg2-binary>=2.9.9
-python-dotenv>=1.0.1
-torch
+numpy==1.26.4
+scikit-learn
+joblib
+shap
+altair
+requests>=2.31.0s
