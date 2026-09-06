@@ -14,7 +14,40 @@ from model.train_model import (
 )
 
 
-st.set_page_config(page_title="AQI 3-Day Forecast", layout="centered")
+# ============================================================
+# CITY HEADER
+# ============================================================
+st.title("🌫️ Next 3-Day AQI Forecast")
+
+st.markdown(
+    """
+    <div style="
+        text-align: center;
+        padding: 12px;
+        margin-bottom: 15px;
+        border-radius: 12px;
+        background: linear-gradient(90deg, #E8F5E9, #F1F8E9);
+        border: 1px solid #A5D6A7;
+    ">
+        <div style="
+            font-size: 14px;
+            color: #388E3C;
+            font-weight: 500;
+        ">
+            📍 CURRENT LOCATION
+        </div>
+        <div style="
+            font-size: 26px;
+            font-weight: 700;
+            color: #1B5E20;
+        ">
+            Rawalpindi
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
 
 
 
@@ -222,7 +255,6 @@ def get_latest_sequence():
     return latest_window_ml, last_timestamp, recent_daily
 
 
-st.title("🌫️ Next 3-Day AQI Forecast")
 
 import os
 from datetime import datetime
