@@ -6,6 +6,6 @@ joblib
 shap
 altair
 dotenv
-psycopg2
+psycopg2==2.9.12
 requests>=2.31.0
 SQLAlchemy>=2.0.0
