@@ -21,17 +21,14 @@ def create_3day_sequences(
 
     for i in range(len(df) - sequence_length - 72):
 
-        # Previous 24 hours
         X_sequence = df[
             feature_columns
         ].iloc[
             i:i + sequence_length
         ].values
 
-        # First future day
         target_start = i + sequence_length
 
-        # Day 1, Day 2, Day 3
         target = df[
             target_column
         ].iloc[

@@ -1,22 +1,6 @@
 
-# ============================================================
-# TRADITIONAL ML MODELS FOR 3-DAY AQI FORECASTING
-#
-# Input  : Previous 72 hours
-# Output : Day 1, Day 2, Day 3 daily average AQI
-#
-# Split  : 85% Train / 15% Validation  (chronological, no test set)
-#
-# Models:
-#   1. Random Forest
-#   2. Extra Trees
-#   3. Gradient Boosting
-#   4. Ensemble
-# ============================================================
-
 import joblib
 
-# add this once at the top, after the imports
 import os
 os.makedirs("src/saved_models", exist_ok=True)
 
@@ -37,11 +21,6 @@ from sklearn.metrics import (
     r2_score
 )
 
-
-# ============================================================
-# 1. LOAD YOUR DATA
-# ============================================================
-
 from .read_feature import read_features
 from .prepare_data import add_daily_avg_aqi
 from .data_processor import create_3day_sequences
@@ -51,10 +30,6 @@ df = read_features()
 
 df = add_daily_avg_aqi(df)
 
-
-# ============================================================
-# 2. FEATURES
-# ============================================================
 
 feature_columns = [
     "temperature_2m",
@@ -75,11 +50,6 @@ feature_columns = [
     "month_cos"
 ]
 
-
-# ============================================================
-# 3. CREATE 72-HOUR SEQUENCES
-# ============================================================
-
 SEQUENCE_LENGTH = 72
 
 X, y = create_3day_sequences(
@@ -92,11 +62,6 @@ X, y = create_3day_sequences(
 print("Original X:", X.shape)
 print("Original y:", y.shape)
 
-
-# ============================================================
-# 4. CHRONOLOGICAL SPLIT  ->  85% TRAIN / 15% VALIDATION
-# ============================================================
-# No test set - validation is the only held-out performance check.
 
 n_samples = len(X)
 
@@ -117,25 +82,6 @@ print("=" * 60)
 print("Train     :", X_train.shape, y_train.shape)
 print("Validation:", X_val.shape, y_val.shape)
 
-
-# ============================================================
-# 5. CONVERT 3D SEQUENCES TO 2D
-# ============================================================
-#
-# LSTM expects:
-#
-#     [samples, 72, 16]
-#
-# Random Forest expects:
-#
-#     [samples, features]
-#
-# Therefore:
-#
-#     72 × 16 = 1152 features
-#
-# ============================================================
-
 X_train_ml = X_train.reshape(
     X_train.shape[0],
     -1
@@ -151,10 +97,6 @@ print("\nML input shape:")
 print("Train     :", X_train_ml.shape)
 print("Validation:", X_val_ml.shape)
 
-
-# ============================================================
-# 6. FUNCTION TO EVALUATE MODEL
-# ============================================================
 
 def evaluate_model(name, model):
 
@@ -175,11 +117,6 @@ def evaluate_model(name, model):
     val_pred = model.predict(
         X_val_ml
     )
-
-
-    # --------------------------------------------------------
-    # Validation
-    # --------------------------------------------------------
 
     print("\nVALIDATION RESULTS")
 
@@ -256,45 +193,20 @@ import os
 import requests
 import joblib
 
-
-# ============================================================
-# PRODUCTION MODEL PATHS
-# ============================================================
-
 PRODUCTION_MODEL_PATH = "src/saved_models/rf_production.pkl"
 HISTORY_CSV_PATH = "src/saved_models/training_history.csv"
-
-
-# ============================================================
-# HUGGING FACE MODEL
-# ============================================================
 
 HUGGINGFACE_MODEL_URL = (
     "https://huggingface.co/abdullahadnan123/Random_Forest/"
     "resolve/main/rf_production.pkl"
 )
 
-
-# ============================================================
-# MAKE SURE SAVED MODEL DIRECTORY EXISTS
-# ============================================================
-
 os.makedirs(
     "src/saved_models",
     exist_ok=True
 )
 
-
-# ============================================================
-# DOWNLOAD PRODUCTION MODEL FROM HUGGING FACE
-# ============================================================
-
 def ensure_production_model():
-
-    """
-    Download rf_production.pkl from Hugging Face
-    if it does not already exist locally.
-    """
 
     if os.path.exists(PRODUCTION_MODEL_PATH):
 
@@ -384,11 +296,6 @@ def ensure_production_model():
         PRODUCTION_MODEL_PATH
     )
 
-
-# ============================================================
-# FIXED CSV COLUMN LAYOUT
-# ============================================================
-
 _METRIC_KEYS = []
 
 for _day in range(1, 4):
@@ -420,11 +327,6 @@ HISTORY_FIELDNAMES = (
         for k in _METRIC_KEYS
     ]
 )
-
-
-# ============================================================
-# EVALUATE ON VALIDATION
-# ============================================================
 
 def evaluate_on_validation(
     model,
@@ -501,10 +403,6 @@ def evaluate_on_validation(
     return metrics
 
 
-# ============================================================
-# LOG TRAINING HISTORY
-# ============================================================
-
 def log_history(row: dict):
 
     os.makedirs(
@@ -541,34 +439,14 @@ def log_history(row: dict):
         })
 
 
-# ============================================================
-# TRAIN CANDIDATE MODEL
-# ============================================================
-
 def train_candidate(
     X_train_ml,
     y_train,
     production_model_path=PRODUCTION_MODEL_PATH
 ):
 
-    """
-    Builds a CANDIDATE model.
-
-    Never mutates the production file directly.
-    Downloads the production model from Hugging Face
-    if it is not available locally.
-    """
-
-    # --------------------------------------------------------
-    # Make sure production model exists
-    # --------------------------------------------------------
-
     ensure_production_model()
 
-
-    # --------------------------------------------------------
-    # Load production model
-    # --------------------------------------------------------
 
     if (
         production_model_path
@@ -615,10 +493,6 @@ def train_candidate(
 
     return candidate
 
-
-# ============================================================
-# COMPARE AND PROMOTE
-# ============================================================
 
 def compare_and_promote(
     candidate,
@@ -787,11 +661,6 @@ def compare_and_promote(
         production_metrics
     )
 
-
-# ============================================================
-# WEEKLY RETRAIN
-# ============================================================
-
 def retrain_weekly():
 
     print("\n" + "=" * 60)
@@ -802,33 +671,13 @@ def retrain_weekly():
 
     print("=" * 60)
 
-
-    # --------------------------------------------------------
-    # Make sure production model exists
-    # --------------------------------------------------------
-
     ensure_production_model()
 
-
-    # --------------------------------------------------------
-    # 1. READ LATEST DATA
-    # --------------------------------------------------------
-
     df = read_features()
-
-
-    # --------------------------------------------------------
-    # 2. ADD DAILY AVERAGE AQI
-    # --------------------------------------------------------
 
     df = add_daily_avg_aqi(
         df
     )
-
-
-    # --------------------------------------------------------
-    # 3. CREATE 3-DAY SEQUENCES
-    # --------------------------------------------------------
 
     X, y = create_3day_sequences(
 
@@ -844,11 +693,6 @@ def retrain_weekly():
             SEQUENCE_LENGTH
 
     )
-
-
-    # --------------------------------------------------------
-    # 4. CHRONOLOGICAL SPLIT
-    # --------------------------------------------------------
 
     n_samples = len(X)
 
@@ -875,11 +719,6 @@ def retrain_weekly():
         train_end:
     ]
 
-
-    # --------------------------------------------------------
-    # 5. CONVERT 3D → 2D
-    # --------------------------------------------------------
-
     X_train_ml = X_train.reshape(
         X_train.shape[0],
         -1
@@ -892,10 +731,6 @@ def retrain_weekly():
     )
 
 
-    # --------------------------------------------------------
-    # 6. BUILD CANDIDATE
-    # --------------------------------------------------------
-
     candidate = train_candidate(
 
         X_train_ml,
@@ -905,11 +740,6 @@ def retrain_weekly():
         PRODUCTION_MODEL_PATH
 
     )
-
-
-    # --------------------------------------------------------
-    # 7. COMPARE CANDIDATE VS PRODUCTION
-    # --------------------------------------------------------
 
     winner, cand_metrics, prod_metrics = (
         compare_and_promote(

@@ -2,3 +2,4 @@ tensorflow==2.16.2
 scikit-learn
 pandas
 numpy
+torch
