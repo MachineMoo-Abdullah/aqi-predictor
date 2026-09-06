@@ -24,5 +24,8 @@ def read_features():
         )
 
     df["datetime"] = pd.to_datetime(df["datetime"])
+    print(df.columns)
 
     return df
+
+read_features()

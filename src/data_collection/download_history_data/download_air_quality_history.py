@@ -3,13 +3,10 @@ import pandas as pd
 from pathlib import Path
 import sys
 
-# Add parent directory to Python path
-sys.path.append(str(Path(__file__).resolve().parent.parent))
-
-from fetching_live_data.config import *
+from ..fetching_live_data.config import *
 
 START_DATE = "2024-01-01"
-END_DATE = "2026-08-07"
+END_DATE = "2026-09-02"
 
 url = "https://air-quality-api.open-meteo.com/v1/air-quality"
 
@@ -61,11 +58,11 @@ df = df[
     ]
 ]
 
-RAW_DIR = Path("aqi-predictor/data/raw")
-RAW_DIR.mkdir(parents=True, exist_ok=True)
+RAW_DIR = Path(__file__).resolve().parent.parent.parent.parent
+sys.path.insert(0, str(RAW_DIR))
 
 df.to_csv(
-    RAW_DIR / "air_quality_hourly.csv",
+    RAW_DIR / "data/raw/air_quality_hourly.csv",
     index=False
 )
 

@@ -1,46 +1,51 @@
+
+import pandas as pd
 import numpy as np
+
+import torch
+import torch.nn as nn
+
+from torch.utils.data import TensorDataset, DataLoader
+
 from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+def create_3day_sequences(
+    df,
+    feature_columns,
+    target_column="daily_avg_AQI",
+    sequence_length=24
+):
 
-LOOKBACK = 24
+    X = []
+    y = []
 
-def create_sequences(X, y):
+    for i in range(len(df) - sequence_length - 72):
 
-    X_seq = []
-    y_seq = []
+        # Previous 24 hours
+        X_sequence = df[
+            feature_columns
+        ].iloc[
+            i:i + sequence_length
+        ].values
 
-    for i in range(LOOKBACK, len(X)):
-        X_seq.append(X.iloc[i-LOOKBACK:i].values)
-        y_seq.append(y.iloc[i])
+        # First future day
+        target_start = i + sequence_length
 
-    return np.array(X_seq), np.array(y_seq)
+        # Day 1, Day 2, Day 3
+        target = df[
+            target_column
+        ].iloc[
+            [
+                target_start,
+                target_start + 24,
+                target_start + 48
+            ]
+        ].values
 
+        X.append(X_sequence)
+        y.append(target)
 
-def scale_train_test(X_train, X_test):
+    X = np.array(X, dtype=np.float32)
+    y = np.array(y, dtype=np.float32)
 
-    scaler = StandardScaler()
-
-    train_shape = X_train.shape
-    test_shape = X_test.shape
-
-    X_train = scaler.fit_transform(
-        X_train.reshape(-1, train_shape[-1])
-    ).reshape(train_shape)
-
-    X_test = scaler.transform(
-        X_test.reshape(-1, test_shape[-1])
-    ).reshape(test_shape)
-
-    return X_train, X_test, scaler
-
-
-def scale_full_data(X):
-
-    scaler = StandardScaler()
-
-    shape = X.shape
-
-    X = scaler.fit_transform(
-        X.reshape(-1, shape[-1])
-    ).reshape(shape)
-
-    return X, scaler
+    return X, y

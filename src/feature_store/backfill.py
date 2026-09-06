@@ -7,7 +7,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 import pandas as pd
 from sqlalchemy import text
 
-from feature_store.connection import engine
+from .connection import engine
 from sqlalchemy.types import DateTime
 
 
@@ -109,7 +109,7 @@ def upload_historical_features():
     df = pd.read_csv(
         PROJECT_ROOT / "data/processed/historical_dataset_hourly.csv"
     )
-
+    print("started")
     # Convert datetime column
     df["datetime"] = pd.to_datetime(df["datetime"])
 
@@ -125,3 +125,5 @@ def upload_historical_features():
     )
 
     print(f"Uploaded {len(df)} historical feature rows.")
+
+upload_historical_features()

@@ -1,25 +1,54 @@
-from pathlib import Path
-import sys
-
-PROJECT_ROOT = Path(__file__).resolve().parent
-sys.path.insert(0, str(PROJECT_ROOT))
-
-from read_feature import read_features
+import pandas as pd
 
 
-def prepare_dataset():
+def add_daily_avg_aqi(df, aqi_column="AQI"):
+    """
+    Add a forward-looking 24-hour average AQI column.
 
-    df = read_features()
+    Example:
+        Row 1  -> mean(AQI rows 1-24)
+        Row 2  -> mean(AQI rows 2-25)
+        Row 3  -> mean(AQI rows 3-26)
+        ...
 
-    df = df.sort_values("datetime").reset_index(drop=True)
+    The last 23 rows are removed because they do not
+    have a complete 24-hour window.
 
-    y = df["AQI"]
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Dataset containing the AQI column.
 
-    X = df.drop(
-        columns=[
-            "AQI",
-            "datetime"
-        ]
+    aqi_column : str
+        Name of the AQI column. Default = "AQI".
+
+    Returns
+    -------
+    pandas.DataFramea
+        Dataset with a new "daily_avg_AQI" column.
+    """
+
+    df = df.copy()
+
+    # Make sure AQI is numeric
+    df[aqi_column] = pd.to_numeric(
+        df[aqi_column],
+        errors="coerce"
     )
 
-    return X, y
+    # Calculate 24-hour forward average
+    df["daily_avg_AQI"] = (
+        df[aqi_column]
+        .rolling(window=24, min_periods=24)
+        .mean()
+        .shift(-23)
+    )
+
+    # Remove rows that don't have a complete
+    # 24-hour window
+    df = df.dropna(
+        subset=["daily_avg_AQI"]
+    ).reset_index(drop=True)
+    print(df.head)
+    return df
+

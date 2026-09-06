@@ -48,7 +48,7 @@ jobs:
           echo "AIR_QUALITY_API_KEY=${{ secrets.AIR_QUALITY_API_KEY }}" >> .env
 
       - name: Run incremental training
-        run: python -m src.model.pipeline
+        run: python -m src.pipelines.incremental_learning
 
       - name: Upload trained model as workflow artifact
         # models/ is gitignored (correctly -- large binary files don't belong
@@ -64,5 +64,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: training-metrics-${{ github.run_id }}
-          path: models/history/metrics.csv
+          path: src/save_models/training_history.csv
           if-no-files-found: warn

@@ -1,11 +1,12 @@
 import pandas as pd
 from pathlib import Path
-
-RAW_DIR = Path("aqi-predictor/data/raw")
+import sys
+RAW_DIR = Path(__file__).resolve().parent.parent.parent.parent
+sys.path.insert(0, str(RAW_DIR))
 
 # Read hourly datasets
-weather = pd.read_csv(RAW_DIR / "weather_hourly.csv")
-air = pd.read_csv(RAW_DIR / "air_quality_hourly.csv")
+weather = pd.read_csv(RAW_DIR / "data/raw/weather_hourly.csv")
+air = pd.read_csv(RAW_DIR / "data/raw/air_quality_hourly.csv")
 
 # Convert datetime columns
 weather["datetime"] = pd.to_datetime(weather["datetime"])
