@@ -28,4 +28,4 @@ jobs:
           LONGITUDE: ${{ secrets.LONGITUDE }}
 
         run: |
-          python -m src.pipelines.daily_pipeline.py
+          python -m src.pipelines.daily_pipeline
