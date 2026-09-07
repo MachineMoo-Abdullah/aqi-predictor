@@ -9,7 +9,7 @@ The project combines a **Random Forest multi-output regression model**, **SHAP e
 ## 🚀 Live Application
 
 🔗 **Streamlit App:**  
-https://aqi-predictor-by-abdullah.streamlit.app/
+https://aqi-predictor-abduullah.streamlit.app/
 
 🔗 **Production Model:**  
 https://huggingface.co/abdullahadnan123/Random_Forest
@@ -54,47 +54,89 @@ The trained Random Forest model is hosted separately on Hugging Face to keep the
 # 🏗️ System Architecture
 
 ```text
-                    ┌─────────────────────┐
-                    │ Historical AQI Data │
-                    │ + Weather Data      │
-                    └──────────┬──────────┘
-                               │
-                               ▼
-                    ┌─────────────────────┐
-                    │ Data Preprocessing   │
-                    │ & Feature Engineering│
-                    └──────────┬──────────┘
-                               │
-                               ▼
-                    ┌─────────────────────┐
-                    │ Last 72 Hour Window │
-                    └──────────┬──────────┘
-                               │
-                               ▼
-                    ┌─────────────────────┐
-                    │ Random Forest       │
-                    │ Multi-Output Model  │
-                    └──────────┬──────────┘
-                               │
-                     ┌─────────┴─────────┐
-                     ▼                   ▼
-              ┌─────────────┐     ┌──────────────┐
-              │ Day 1 AQI   │     │ Day 2 AQI    │
-              └─────────────┘     └──────────────┘
+                         ┌─────────────────────────────┐
+                         │       Historical Data       │
+                         │                             │
+                         │  Weather + Pollutants + AQI │
+                         └──────────────┬──────────────┘
                                         │
                                         ▼
-                                 ┌──────────────┐
-                                 │ Day 3 AQI    │
-                                 └──────────────┘
-
-                               │
-                               ▼
-                    ┌─────────────────────┐
-                    │ Streamlit Dashboard │
-                    ├─────────────────────┤
-                    │ Forecast            │
-                    │ AQI Category        │
-                    │ Health Guidance     │
-                    │ SHAP Explanation    │
-                    │ Trend Visualization │
-                    └─────────────────────┘
+                         ┌─────────────────────────────┐
+                         │      Data Processing        │
+                         │                             │
+                         │ • Cleaning                  │
+                         │ • Feature Engineering       │
+                         │ • Daily AQI                 │
+                         │ • 72-hour sequences         │
+                         └──────────────┬──────────────┘
+                                        │
+                                        ▼
+                         ┌─────────────────────────────┐
+                         │       Model Training        │
+                         │                             │
+                         │ Random Forest Regressor     │
+                         │ Multi-output regression     │
+                         └──────────────┬──────────────┘
+                                        │
+                                        ▼
+                         ┌─────────────────────────────┐
+                         │      Model Evaluation       │
+                         │                             │
+                         │ R² • MAE • RMSE             │
+                         │ Day 1 • Day 2 • Day 3       │
+                         └──────────────┬──────────────┘
+                                        │
+                              Candidate vs Production
+                                        │
+                         ┌──────────────┴──────────────┐
+                         │                             │
+                         ▼                             ▼
+                  ┌──────────────┐             ┌──────────────┐
+                  │ Better Model │             │ Not Better   │
+                  │     YES      │             │     NO       │
+                  └──────┬───────┘             └──────┬───────┘
+                         │                            │
+                         ▼                            │
+              ┌──────────────────────┐               │
+              │ Hugging Face          │◄──────────────┘
+              │ Production Model      │
+              │                       │
+              │ rf_production.pkl     │
+              └──────────┬────────────┘
+                         │
+                         │ Download
+                         ▼
+              ┌────────────────────────┐
+              │    Streamlit Cloud     │
+              │                        │
+              │       src/app.py       │
+              └───────────┬────────────┘
+                          │
+                          ▼
+              ┌────────────────────────┐
+              │ Latest 72 Hours Data   │
+              └───────────┬────────────┘
+                          │
+                          ▼
+              ┌────────────────────────┐
+              │ Random Forest Model    │
+              │                        │
+              │ Predict next 3 days    │
+              └───────────┬────────────┘
+                          │
+                ┌─────────┼─────────┐
+                ▼         ▼         ▼
+             Day 1      Day 2      Day 3
+              AQI        AQI        AQI
+                │         │         │
+                └─────────┼─────────┘
+                          ▼
+              ┌────────────────────────┐
+              │     Streamlit UI       │
+              │                        │
+              │ • AQI Forecast         │
+              │ • AQI Category         │
+              │ • Health Guidance      │
+              │ • Historical Trend     │
+              │ • SHAP Explanation     │
+              └────────────────────────┘
