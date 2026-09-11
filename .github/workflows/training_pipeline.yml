@@ -55,7 +55,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: model-artifacts-${{ github.run_id }}
-          path: models/
+          path: src/saved_models/
           retention-days: 30
 
       - name: Upload training metrics
@@ -63,5 +63,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: training-metrics-${{ github.run_id }}
-          path: src/save_models/training_history.csv
+          path: src/saved_models/training_history.csv
           if-no-files-found: warn
