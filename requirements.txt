@@ -17,3 +17,4 @@ torch
 huggingface_hub
 matplotlib
 psycopg
+psycopg[binary]
